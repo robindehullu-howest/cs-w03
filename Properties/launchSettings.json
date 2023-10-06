@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "cs_w03": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7299",
+      "launchBrowser": false
+    }
+  }
+}
