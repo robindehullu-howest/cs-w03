@@ -14,6 +14,6 @@ namespace MCT.Functions;
     [FunctionName("HelloWorld")]
     public  async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "HelloWorld")] HttpRequest req, ILogger log)
     {
-        return new OkObjectResult("Hello World");
+        return await Task.FromResult(new OkObjectResult("Hello World"));
     }
 }
