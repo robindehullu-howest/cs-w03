@@ -45,7 +45,7 @@ public async Task<IActionResult> PostRegistration([HttpTrigger(AuthorizationLeve
 
                 await sqlCommand.ExecuteNonQueryAsync();
             }
-            return new OkObjectResult("Registration data received and processed successfully.");
+            return new OkObjectResult($"Registration data received and processed successfully.\nFollowing data inserted in database:\n - ID: {registrationData.RegistrationId}\n - Last name: {registrationData.LastName}\n - First name: {registrationData.FirstName}\n - Email: {registrationData.Email}\n - Zipcode: {registrationData.Zipcode}\n - Age: {registrationData.Age}\n - First time: {registrationData.IsFirstTimer}");
         }
         catch (JsonSerializationException)
         {
