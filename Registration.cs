@@ -20,29 +20,37 @@ public async Task<IActionResult> PostRegistration([HttpTrigger(AuthorizationLeve
     try
     {
         string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-        var registrationData = JsonConvert.DeserializeObject<RegistrationData>(requestBody);
-
-        string connectionString = Environment.GetEnvironmentVariable("ConnectionString");
-        using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+        try
         {
-            await sqlConnection.OpenAsync();
+            var registrationData = JsonConvert.DeserializeObject<RegistrationData>(requestBody);
+            if (registrationData.RegistrationId == Guid.Empty)
+                registrationData.RegistrationId = Guid.NewGuid();
 
-            SqlCommand sqlCommand = new SqlCommand(
-                "INSERT INTO registrations (RegistrationId, LastName, FirstName, Email, Zipcode, Age, IsFirstTimer) " +
-                "VALUES (@RegistrationId, @LastName, @FirstName, @Email, @Zipcode, @Age, @IsFirstTimer)", sqlConnection);
+            string connectionString = Environment.GetEnvironmentVariable("ConnectionString");
+            using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+            {
+                await sqlConnection.OpenAsync();
 
-            sqlCommand.Parameters.AddWithValue("@RegistrationId", registrationData.RegistrationId);
-            sqlCommand.Parameters.AddWithValue("@LastName", registrationData.LastName);
-            sqlCommand.Parameters.AddWithValue("@FirstName", registrationData.FirstName);
-            sqlCommand.Parameters.AddWithValue("@Email", registrationData.Email);
-            sqlCommand.Parameters.AddWithValue("@Zipcode", registrationData.Zipcode);
-            sqlCommand.Parameters.AddWithValue("@Age", registrationData.Age);
-            sqlCommand.Parameters.AddWithValue("@IsFirstTimer", registrationData.IsFirstTimer);
+                SqlCommand sqlCommand = new SqlCommand(
+                    "INSERT INTO registrations (RegistrationId, LastName, FirstName, Email, Zipcode, Age, IsFirstTimer) " +
+                    "VALUES (@RegistrationId, @LastName, @FirstName, @Email, @Zipcode, @Age, @IsFirstTimer)", sqlConnection);
 
-            await sqlCommand.ExecuteNonQueryAsync();
+                sqlCommand.Parameters.AddWithValue("@RegistrationId", registrationData.RegistrationId);
+                sqlCommand.Parameters.AddWithValue("@LastName", registrationData.LastName);
+                sqlCommand.Parameters.AddWithValue("@FirstName", registrationData.FirstName);
+                sqlCommand.Parameters.AddWithValue("@Email", registrationData.Email);
+                sqlCommand.Parameters.AddWithValue("@Zipcode", registrationData.Zipcode);
+                sqlCommand.Parameters.AddWithValue("@Age", registrationData.Age);
+                sqlCommand.Parameters.AddWithValue("@IsFirstTimer", registrationData.IsFirstTimer);
+
+                await sqlCommand.ExecuteNonQueryAsync();
+            }
+            return new OkObjectResult("Registration data received and processed successfully.");
         }
-
-        return new OkObjectResult("Registration data received and saved successfully.");
+        catch (JsonSerializationException)
+        {
+            return new BadRequestObjectResult("Invalid JSON format for registration data.");
+        }
     }
     catch (Exception ex)
     {
