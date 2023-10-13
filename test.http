@@ -1,0 +1,8 @@
+{
+    "lastname": "Doe",
+    "firstname": "John",
+    "email": "john.doe@example.com"
+    "zipCode": "12345",
+    "age": 30,
+    "isFirstTimer": true
+}
