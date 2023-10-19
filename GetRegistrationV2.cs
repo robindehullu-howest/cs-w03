@@ -12,6 +12,7 @@ using Azure.Data.Tables;
 using Azure;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using Azure.Identity;
 
 namespace MCT.Functions
 {
@@ -21,16 +22,19 @@ namespace MCT.Functions
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v2/registrations")] HttpRequest req, ILogger log)
         {
-            string connectionString = Environment.GetEnvironmentVariable("TableStorage");
+            // string connectionString = Environment.GetEnvironmentVariable("TableStorage");
             string partitionKey = "registrations";
 
-            var tableClient = new TableClient(connectionString, partitionKey);
-            Pageable<TableEntity> queryRegistrations = tableClient.Query<TableEntity>(filter: $"PartitionKey eq {partitionKey}");
+            var tableClient = new TableClient(new Uri("https://stw04.table.core.windows.net/registrations"),partitionKey , new DefaultAzureCredential());
+
+            Pageable<TableEntity> queryRegistrations = tableClient.Query<TableEntity>(filter: $"PartitionKey eq '{partitionKey}'");
 
             var returnValue = new List<RegistrationData>();
 
-            foreach(var registration in queryRegistrations) {
-                returnValue.Add(new RegistrationData(){
+            foreach (var registration in queryRegistrations)
+            {
+                returnValue.Add(new RegistrationData()
+                {
                     Age = int.Parse(registration["age"].ToString()),
                     Email = registration["email"].ToString(),
                     LastName = registration["lastname"].ToString(),

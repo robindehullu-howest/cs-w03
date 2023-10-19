@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using MCT.Functions.Models;
 using Azure.Data.Tables;
+using Azure;
+using Azure.Identity;
 
 namespace MCT.Functions
 {
@@ -18,13 +20,16 @@ namespace MCT.Functions
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "v2/registrations")] HttpRequest req, ILogger log)
         {
-            string connectionString = Environment.GetEnvironmentVariable("TableStorage");
+            // string connectionString = Environment.GetEnvironmentVariable("TableStorage");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var newRegistration = JsonConvert.DeserializeObject<RegistrationData>(requestBody);
 
-            var tableClient = new TableClient(connectionString, "registrations");
+            //var tableClient = new TableClient(connectionString, "registrations");
             string partitionKey = "registrations";
+
+            var tableClient = new TableClient(new Uri("https://stw04.table.core.windows.net/registrations"),partitionKey , new DefaultAzureCredential());
+
             Guid rowKeyGuid = Guid.NewGuid();
             string rowKey = rowKeyGuid.ToString();
 
